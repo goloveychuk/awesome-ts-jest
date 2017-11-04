@@ -7,7 +7,7 @@ import * as fs from 'fs';
 export interface OutputFile {
     text: string;
     sourceMap: string;
-    declaration: ts.OutputFile;
+    declaration?: ts.OutputFile;
 }
 
 
@@ -95,7 +95,7 @@ export function findResultFor(fileName: string, output: ts.EmitOutput): OutputFi
             declaration = o;
         }
     }
-    if (text === undefined || sourceMap === undefined || declaration === undefined) {
+    if (text === undefined || sourceMap === undefined) {
         throw new Error('smth is undefined')
     }
     return {
