@@ -2,8 +2,8 @@ import {Reflective} from 'tsruntime'
 
 
 
-export type  B  = Array<string>
+export type StringArray  = Array<string>
 
-export const enum E {
-    a = 'a'
+export const enum Enum {
+    a = 'someenumval'
 }
