@@ -52,29 +52,35 @@ export class Compiler {
 
     }
     private createServiceHost() {
+        const { files, options } = this;
 
+        let service: ts.LanguageService
 
-        const serviceHost: ts.LanguageServiceHost = {
+        class ServiceHost implements ts.LanguageServiceHost {
             getCustomTransformers() {
                 return {
                     before: [tsruntimeTransformer(service.getProgram())]
                 }
-            },
-            getScriptFileNames: () => this.files.getFileNames(),
-            getScriptVersion: (fileName) => this.files.getScriptVersion(fileName),
-            getScriptSnapshot: (fileName) => {
+            }
+            getScriptFileNames() {
+                return files.getFileNames()
+            }
+            getScriptVersion(fileName: string) {
+                return files.getScriptVersion(fileName)
+            }
+            getScriptSnapshot(fileName: string) {
                 if (!fs.existsSync(fileName)) {
                     return undefined;
                 }
 
                 return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
-            },
-            getCurrentDirectory: () => process.cwd(),
-            getCompilationSettings: () => this.options,
-            getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
-            fileExists: ts.sys.fileExists,
-            readFile: ts.sys.readFile,
-            readDirectory: ts.sys.readDirectory,
+            }
+            getCurrentDirectory = () => process.cwd()
+            getCompilationSettings = () => options
+            getDefaultLibFileName = (options: ts.CompilerOptions) => ts.getDefaultLibFilePath(options)
+            fileExists = ts.sys.fileExists
+            readFile = ts.sys.readFile
+            readDirectory = ts.sys.readDirectory
             // resolveTypeReferenceDirectives(typeDirectiveNames: string[], containingFile: string) {
             //     const resolved = typeDirectiveNames.map(directive =>
             //         ts.resolveTypeReferenceDirective(directive, containingFile, options, ts.sys)
@@ -88,12 +94,10 @@ export class Compiler {
 
             // return resolved;
             // }
-        };
-
-        // Create the language service files
-        const service = ts.createLanguageService(serviceHost, ts.createDocumentRegistry())
+        }
 
 
+        service = ts.createLanguageService(new ServiceHost(), ts.createDocumentRegistry())
 
         return service
     }
@@ -113,12 +117,6 @@ export class Compiler {
         if (output.outputFiles.length === 0) {
             throw new Error(`outpufiles.length==0, ${output}`)
         }
-        // console.log(output.outputFiles.length)
-        // output.outputFiles.forEach(o => {
-        // fs.writeFileSync(o.name, o.text, "utf8");
-        // console.log(o.name)
-        // console.log(o.text)
-        // });
         const res = utils.findResultFor(fileName, output)
         return res
     }
